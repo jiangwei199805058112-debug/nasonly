@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 自定义主题，继承 Material3 DayNight 无 ActionBar -->
+    <style name="Theme.NASPlayer" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 这里需要再自定义颜色/字体时添加 -->
+    </style>
+</resources>

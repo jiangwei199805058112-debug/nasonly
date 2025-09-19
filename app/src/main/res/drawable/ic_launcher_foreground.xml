@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 这里先放个简单图形，后续你可以换成自己的前景 SVG/Vector -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,12a42,42 0 1,0 0,84a42,42 0 1,0 0,-84z"/>
+</vector>
