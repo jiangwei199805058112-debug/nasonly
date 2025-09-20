@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.nasonly.data.db.AppDatabase
 import com.example.nasonly.data.db.PlaybackHistoryDao
 import com.example.nasonly.data.db.PlaylistDao
+import com.example.nasonly.data.db.ScanProgressDao
 import com.example.nasonly.data.db.VideoDao
 import dagger.Module
 import dagger.Provides
@@ -40,4 +41,7 @@ object DatabaseModule {
 
     @Provides
     fun providePlaybackHistoryDao(db: AppDatabase): PlaybackHistoryDao = db.playbackHistoryDao()
+
+    @Provides
+    fun provideScanProgressDao(db: AppDatabase): ScanProgressDao = db.scanProgressDao()
 }

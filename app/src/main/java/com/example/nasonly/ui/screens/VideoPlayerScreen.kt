@@ -1,80 +1,97 @@
 package com.example.nasonly.ui.screens
 
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import jcifs.CIFSContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import com.example.nasonly.data.db.PlaybackHistory
-import com.example.nasonly.data.db.PlaybackHistoryDao
-import com.example.nasonly.data.db.VideoDao
-import com.example.nasonly.data.db.VideoEntity
-import com.example.nasonly.data.repository.NasRepository
-import javax.inject.Inject
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 
-@HiltViewModel
-class VideoPlayerViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
-    private val repository: NasRepository,
-    private val videoDao: VideoDao,
-    private val historyDao: PlaybackHistoryDao
-) : ViewModel() {
+@Composable
+fun VideoPlayerScreen(
+    navController: NavController,
+    videoId: String,
+    viewModel: VideoPlayerViewModel = hiltViewModel()
+) {
+    val currentVideo by viewModel.currentVideo.collectAsStateWithLifecycle()
+    val lastPosition by viewModel.lastPlayedPosition.collectAsStateWithLifecycle()
+    val smbContext by viewModel.smbContext.collectAsStateWithLifecycle()
 
-    // 播放位置
-    private val _lastPlayedPosition = MutableStateFlow(0L)
-    val lastPlayedPosition: StateFlow<Long> = _lastPlayedPosition.asStateFlow()
-
-    // SMB 上下文
-    private val _smbContext = MutableStateFlow<CIFSContext?>(null)
-    val smbContext: StateFlow<CIFSContext?> = _smbContext.asStateFlow()
-
-    // 当前视频信息
-    private val _currentVideo = MutableStateFlow<VideoEntity?>(null)
-    val currentVideo = _currentVideo.asStateFlow()
-
-    init {
-        // 从 SavedStateHandle 恢复参数
-        val videoId = savedStateHandle.get<String>("videoId") ?: ""
-        val startPosition = savedStateHandle.get<Int>("position") ?: 0
-
-        viewModelScope.launch {
-            // 从数据库加载视频信息
-            _currentVideo.value = videoDao.getVideoById(videoId)
-
-            // 恢复播放位置
-            _lastPlayedPosition.value = startPosition.toLong()
-
-            // 模拟加载 SMB 会话（你可以在这里接 repository 初始化）
-            delay(500)
-            _smbContext.value = repository.getSmbContext()
-        }
-    }
-
-    fun updatePlaybackPosition(videoId: String, position: Long, duration: Long) {
-        viewModelScope.launch {
-            _lastPlayedPosition.value = position
-            historyDao.upsertHistory(
-                PlaybackHistory(
-                    videoId = videoId,
-                    videoName = _currentVideo.value?.name ?: "未知视频",
-                    videoUrl = _currentVideo.value?.url ?: "",
-                    thumbnailPath = _currentVideo.value?.thumbnailPath,
-                    lastPosition = position,
-                    duration = duration,
-                    lastPlayedTime = System.currentTimeMillis()
-                )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = currentVideo?.name ?: "视频播放") }
             )
         }
-    }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = "视频 ID: $videoId",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold
+            )
 
-    fun onPlaybackCompleted(videoId: String) {
-        viewModelScope.launch {
-            historyDao.deleteHistory(videoId)
+            Text(
+                text = "当前位置: ${lastPosition / 1000}s",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Text(
+                text = if (smbContext != null) "SMB 会话已就绪" else "正在建立 SMB 会话…",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            currentVideo?.let { video ->
+                Text(
+                    text = "来源: ${video.url}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Text(
+                    text = "时长: ${video.duration / 1000}s",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Button(
+                onClick = {
+                    val duration = currentVideo?.duration ?: 0L
+                    viewModel.updatePlaybackPosition(videoId, lastPosition + 10_000, duration)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "模拟更新播放进度")
+            }
+
+            Button(
+                onClick = {
+                    viewModel.onPlaybackCompleted(videoId)
+                    navController.popBackStack()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "结束播放并返回")
+            }
         }
     }
 }

@@ -43,7 +43,6 @@ import com.example.nasonly.core.ui.components.FilterOption
 import com.example.nasonly.core.ui.components.SmbConnectionState
 import com.example.nasonly.core.ui.components.SmbConnectionStatus
 import com.example.nasonly.core.utils.FileUtils
-import com.example.nasonly.data.repository.NasConfig
 import com.example.nasonly.data.smb.SmbConnectionManager
 import com.example.nasonly.navigation.Screen
 import com.example.nasonly.ui.components.SearchAndFilterBar

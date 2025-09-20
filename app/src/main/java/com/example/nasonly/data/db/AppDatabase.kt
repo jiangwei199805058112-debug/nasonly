@@ -7,7 +7,8 @@ import androidx.room.RoomDatabase
     entities = [
         PlaylistEntity::class,
         VideoEntity::class,
-        PlaybackHistory::class
+        PlaybackHistory::class,
+        ScanProgress::class
     ],
     version = 1,
     exportSchema = true
@@ -19,4 +20,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun videoDao(): VideoDao
 
     abstract fun playbackHistoryDao(): PlaybackHistoryDao
+
+    abstract fun scanProgressDao(): ScanProgressDao
 }

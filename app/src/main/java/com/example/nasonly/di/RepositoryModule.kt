@@ -2,9 +2,10 @@ package com.example.nasonly.di
 
 import android.content.Context
 import com.example.nasonly.data.db.PlaylistDao
+import com.example.nasonly.data.db.ScanProgressDao
+import com.example.nasonly.data.db.VideoDao
 import com.example.nasonly.data.repository.NasRepository
 import com.example.nasonly.data.smb.SmbConnectionManager
-import com.example.nasonly.data.smb.SmbDataSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,14 +22,14 @@ object RepositoryModule {
     fun provideNasRepository(
         @ApplicationContext context: Context,
         playlistDao: PlaylistDao,
-        smbDataSource: SmbDataSource,
+        videoDao: VideoDao,
+        scanProgressDao: ScanProgressDao,
         smbConnectionManager: SmbConnectionManager
-    ): NasRepository {
-        return NasRepository(
-            context = context,
-            playlistDao = playlistDao,
-            smbDataSource = smbDataSource,
-            smbManager = smbConnectionManager
-        )
-    }
+    ): NasRepository = NasRepository(
+        context = context,
+        playlistDao = playlistDao,
+        videoDao = videoDao,
+        scanProgressDao = scanProgressDao,
+        smbManager = smbConnectionManager
+    )
 }

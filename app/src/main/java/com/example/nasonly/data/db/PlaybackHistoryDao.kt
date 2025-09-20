@@ -20,7 +20,15 @@ interface PlaybackHistoryDao {
     @Query("SELECT * FROM playback_history ORDER BY lastPlayedTime DESC LIMIT :limit")
     fun getRecentHistory(limit: Int): Flow<List<PlaybackHistory>>
 
+    // 根据视频ID获取播放记录
+    @Query("SELECT * FROM playback_history WHERE videoId = :videoId LIMIT 1")
+    suspend fun getHistoryForVideo(videoId: String): PlaybackHistory?
+
     // 删除单条播放记录
     @Query("DELETE FROM playback_history WHERE videoId = :videoId")
     suspend fun deleteHistory(videoId: String)
+
+    // 清空所有播放记录
+    @Query("DELETE FROM playback_history")
+    suspend fun clearAll()
 }
