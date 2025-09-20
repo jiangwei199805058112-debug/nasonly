@@ -1,10 +1,9 @@
 name: Codex Auto PR
 
 on:
-  workflow_dispatch:   # 手动触发
   push:
     branches-ignore:
-      - main           # 避免主分支自己触发
+      - main   # 只要不是 main 分支的 push，就触发
 
 jobs:
   create-pr:
