@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:name="com.example.nasonly.AppApplication"
+        android:name="nasonly.AppApplication"
         android:allowBackup="true"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
@@ -10,8 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NASPlayer">
 
+        <!-- 已修复：Activity 路径与 MainActivity 的实际包名匹配 -->
         <activity
-            android:name="com.example.nasonly.MainActivity"
+            android:name="nasonly.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
