@@ -1,4 +1,4 @@
-package nasonly.core.ui.components
+package com.example.nasonly.core.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,71 +25,43 @@ import androidx.compose.ui.unit.dp
 fun ErrorDialog(
     title: String,
     message: String,
-    onDismiss: () -> Unit,
-    onRetry: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onDismiss: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        modifier = modifier.padding(16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = MaterialTheme.shapes.large
-                )
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text(text = "确定")
+            }
+        },
+        icon = {
             Icon(
                 imageVector = Icons.Default.Error,
-                contentDescription = "错误",
-                tint = Color.Red,
-                modifier = Modifier.size(48.dp)
+                contentDescription = "Error",
+                tint = Color.Red
             )
-
+        },
+        title = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                textAlign = TextAlign.Center
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.Red
             )
-
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                textAlign = TextAlign.Center
-            )
-
+        },
+        text = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (onRetry != null) {
-                    Button(
-                        onClick = onRetry,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("重试")
-                    }
-                }
-
-                Button(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("确定")
-                }
+                Text(
+                    text = message,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
-    }
+    )
 }

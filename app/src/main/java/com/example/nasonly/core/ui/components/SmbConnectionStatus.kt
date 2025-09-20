@@ -1,4 +1,4 @@
-package nasonly.core.ui.components
+package com.example.nasonly.core.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -24,64 +24,68 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun SmbConnectionStatus(
-    status: SmbConnectionState,
+    isVisible: Boolean,
+    status: SmbStatus,
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
-        visible = status != SmbConnectionState.CONNECTED || status == SmbConnectionState.RECONNECTED,
-        enter = slideInVertically(initialOffsetY = { -it }),
-        exit = slideOutVertically(targetOffsetY = { -it }),
-        modifier = modifier
+        visible = isVisible,
+        enter = slideInVertically { -it },
+        exit = slideOutVertically { -it }
     ) {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
-                .background(
-                    when (status) {
-                        SmbConnectionState.CONNECTING -> Color(0xFF6495ED) // 蓝色
-                        SmbConnectionState.CONNECTED,
-                        SmbConnectionState.RECONNECTED -> Color(0xFF32CD32) // 绿色
-                        SmbConnectionState.DISCONNECTED,
-                        SmbConnectionState.ERROR -> Color(0xFFFF6347) // 红色
-                    }
-                )
                 .padding(8.dp),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = when (status) {
-                    SmbConnectionState.CONNECTING -> Icons.Default.CloudSync
-                    SmbConnectionState.CONNECTED,
-                    SmbConnectionState.RECONNECTED -> Icons.Default.CheckCircle
-                    SmbConnectionState.DISCONNECTED,
-                    SmbConnectionState.ERROR -> Icons.Default.CloudOff
-                },
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-
-            Text(
-                text = when (status) {
-                    SmbConnectionState.CONNECTING -> "正在连接到NAS..."
-                    SmbConnectionState.CONNECTED -> "已连接到NAS"
-                    SmbConnectionState.RECONNECTED -> "已重新连接到NAS"
-                    SmbConnectionState.DISCONNECTED -> "已与NAS断开连接"
-                    SmbConnectionState.ERROR -> "NAS连接错误"
-                },
-                color = Color.White,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(start = 8.dp)
-            )
+            when (status) {
+                SmbStatus.CONNECTED -> {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Connected",
+                        tint = Color.Green
+                    )
+                    Text(
+                        text = "已连接 NAS",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+                SmbStatus.CONNECTING -> {
+                    Icon(
+                        imageVector = Icons.Default.CloudSync,
+                        contentDescription = "Connecting",
+                        tint = Color.Blue
+                    )
+                    Text(
+                        text = "正在连接 NAS...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+                SmbStatus.DISCONNECTED -> {
+                    Icon(
+                        imageVector = Icons.Default.CloudOff,
+                        contentDescription = "Disconnected",
+                        tint = Color.Red
+                    )
+                    Text(
+                        text = "连接已断开",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
         }
     }
 }
 
-// SMB连接状态枚举
-enum class SmbConnectionState {
-    CONNECTING,    // 正在连接
-    CONNECTED,     // 已连接
-    RECONNECTED,   // 已重新连接
-    DISCONNECTED,  // 已断开
-    ERROR          // 错误
+/**
+ * SMB状态枚举
+ */
+enum class SmbStatus {
+    CONNECTED,
+    CONNECTING,
+    DISCONNECTED
 }

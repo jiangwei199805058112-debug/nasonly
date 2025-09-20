@@ -1,4 +1,4 @@
-package nasonly.core.utils
+package com.example.nasonly.core.utils
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -22,7 +22,7 @@ object NetworkUtils {
     }
 
     /**
-     * 检查是否是WiFi连接
+     * 检查是否是 WiFi 连接
      */
     fun isWifiConnected(context: Context): Boolean {
         val connectivityManager = context.getSystemService(

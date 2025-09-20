@@ -1,4 +1,4 @@
-package nasonly.ui.screens
+package com.example.nasonly.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -40,9 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import nasonly.core.utils.formatTime
-import nasonly.data.db.PlaybackHistory
-import nasonly.navigation.Screen
+import com.example.nasonly.core.utils.formatTime
+import com.example.nasonly.data.db.PlaybackHistory
+import com.example.nasonly.navigation.Screen
 
 @Composable
 fun PlaybackHistoryScreen(
@@ -75,86 +75,89 @@ fun PlaybackHistoryScreen(
                 }
             )
         }
-    ) { innerPadding ->
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(paddingValues)
         ) {
             when {
-                uiState.isLoading && historyList.isEmpty() -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator()
-                        Text("加载历史记录中...", modifier = Modifier.padding(top = 16.dp))
-                    }
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
 
-                historyList.isEmpty() && !uiState.isLoading -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "暂无播放记录",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                        Text(
-                            text = "播放视频后会在这里显示历史记录",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
+                uiState.errorMessage != null -> {
+                    Text(
+                        text = uiState.errorMessage ?: "加载失败",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                historyList.isEmpty() -> {
+                    Text(
+                        text = "暂无播放历史",
+                        modifier = Modifier.align(Alignment.Center),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
 
                 else -> {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         items(historyList) { history ->
-                            HistoryItem(
-                                history = history,
-                                onItemClick = {
-                                    navController.navigate(
-                                        Screen.VideoPlayer.createRoute(
-                                            videoId = history.videoId,
-                                            videoUrl = history.videoUrl,
-                                            position = history.lastPosition.toInt()
-                                        )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(history.thumbnailPath),
+                                    contentDescription = history.videoName,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                )
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(horizontal = 8.dp)
+                                ) {
+                                    Text(
+                                        text = history.videoName,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        style = MaterialTheme.typography.bodyLarge
                                     )
-                                },
-                                onDeleteClick = {
-                                    videoToDelete = history.videoId
+                                    Text(
+                                        text = "上次观看至 ${formatTime(history.lastPosition)} / ${formatTime(history.duration)}",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
                                 }
-                            )
+                                IconButton(onClick = { videoToDelete = history.videoId }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "删除"
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
-
-            // 错误提示
-            if (uiState.errorMessage.isNotEmpty()) {
-                Text(
-                    text = uiState.errorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            }
         }
     }
 
-    // 清空所有历史确认对话框
+    // 清空所有历史对话框
     if (showClearAllDialog) {
         AlertDialog(
             onDismissRequest = { showClearAllDialog = false },
-            title = { Text("清空播放历史") },
-            text = { Text("确定要删除所有播放记录吗？此操作不可恢复。") },
+            title = { Text("确认清空历史") },
+            text = { Text("确定要清空所有播放历史吗？") },
             confirmButton = {
                 Button(onClick = {
                     viewModel.clearAllHistory()
@@ -171,15 +174,15 @@ fun PlaybackHistoryScreen(
         )
     }
 
-    // 删除单个历史确认对话框
-    videoToDelete?.let { videoId ->
+    // 删除单个历史对话框
+    if (videoToDelete != null) {
         AlertDialog(
             onDismissRequest = { videoToDelete = null },
-            title = { Text("删除记录") },
-            text = { Text("确定要删除这条播放记录吗？") },
+            title = { Text("删除历史") },
+            text = { Text("确定要删除该条历史记录吗？") },
             confirmButton = {
                 Button(onClick = {
-                    viewModel.deleteHistory(videoId)
+                    viewModel.deleteHistory(videoToDelete!!)
                     videoToDelete = null
                 }) {
                     Text("确认")
@@ -191,117 +194,5 @@ fun PlaybackHistoryScreen(
                 }
             }
         )
-    }
-}
-
-@Composable
-private fun HistoryItem(
-    history: PlaybackHistory,
-    onItemClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onItemClick() }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 缩略图
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = if (history.thumbnailPath.isNullOrEmpty()) {
-                        "https://picsum.photos/seed/${history.videoId}/200/150"
-                    } else history.thumbnailPath
-                ),
-                contentDescription = history.videoName,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-
-            // 播放进度指示
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
-            ) {
-                val progress = if (history.duration > 0) {
-                    history.lastPosition.toFloat() / history.duration
-                } else 0f
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(progress)
-                        .background(MaterialTheme.colorScheme.primary)
-                )
-            }
-        }
-
-        // 视频信息
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                text = history.videoName,
-                style = MaterialTheme.typography.bodyLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "${formatTime(history.lastPosition)} / ${formatTime(history.duration)}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Text(
-                    text = formatHistoryTime(history.lastPlayedTime),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        // 删除按钮
-        IconButton(
-            onClick = { onDeleteClick() },
-            modifier = Modifier.size(40.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "删除记录"
-            )
-        }
-    }
-}
-
-// 格式化历史时间显示
-fun formatHistoryTime(timestamp: Long): String {
-    val now = System.currentTimeMillis()
-    val diff = now - timestamp
-    val diffMinutes = diff / (60 * 1000)
-    val diffHours = diff / (60 * 60 * 1000)
-    val diffDays = diff / (24 * 60 * 60 * 1000)
-
-    return when {
-        diffMinutes < 60 -> "${diffMinutes}分钟前"
-        diffHours < 24 -> "${diffHours}小时前"
-        diffDays < 7 -> "${diffDays}天前"
-        else -> "${diffDays / 7}周前"
     }
 }

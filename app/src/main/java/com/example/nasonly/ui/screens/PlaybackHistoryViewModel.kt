@@ -1,4 +1,4 @@
-package nasonly.ui.screens
+package com.example.nasonly.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import nasonly.data.db.PlaybackHistory
-import nasonly.data.db.PlaybackHistoryDao
+import com.example.nasonly.data.db.PlaybackHistory
+import com.example.nasonly.data.db.PlaybackHistoryDao
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,10 +34,9 @@ class PlaybackHistoryViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoading = false) }
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(
-                    isLoading = false,
-                    errorMessage = "加载历史记录失败: ${e.message}"
-                ) }
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = e.message ?: "加载失败")
+                }
             }
         }
     }
@@ -47,13 +46,10 @@ class PlaybackHistoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 historyDao.deleteHistory(videoId)
-                // 重新加载列表
-                val updatedList = _historyList.value.filter { it.videoId != videoId }
-                _historyList.value = updatedList
             } catch (e: Exception) {
-                _uiState.update { it.copy(
-                    errorMessage = "删除失败: ${e.message}"
-                ) }
+                _uiState.update {
+                    it.copy(errorMessage = e.message ?: "删除失败")
+                }
             }
         }
     }
@@ -62,19 +58,18 @@ class PlaybackHistoryViewModel @Inject constructor(
     fun clearAllHistory() {
         viewModelScope.launch {
             try {
-                historyDao.clearAllHistory()
-                _historyList.value = emptyList()
+                historyDao.clearAll()
             } catch (e: Exception) {
-                _uiState.update { it.copy(
-                    errorMessage = "清空失败: ${e.message}"
-                ) }
+                _uiState.update {
+                    it.copy(errorMessage = e.message ?: "清空失败")
+                }
             }
         }
     }
 }
 
-// UI状态类
+// UI 状态数据类
 data class PlaybackHistoryUiState(
     val isLoading: Boolean = false,
-    val errorMessage: String = ""
+    val errorMessage: String? = null
 )

@@ -1,4 +1,4 @@
-package nasonly
+package com.example.nasonly
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,8 +9,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import nasonly.navigation.NavGraph
-import nasonly.ui.theme.NasPlayerTheme
+import com.example.nasonly.navigation.NavGraph
+import com.example.nasonly.ui.theme.NasPlayerTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

@@ -1,4 +1,4 @@
-package nasonly.core.utils
+package com.example.nasonly.core.utils
 
 object FileUtils {
     /**
@@ -20,5 +20,16 @@ object FileUtils {
             }
             else -> "$bytes B"
         }
+    }
+
+    /**
+     * 文件大小单位枚举
+     */
+    enum class FileSizeUnit {
+        B, KB, MB, GB;
+
+        fun toKB(bytes: Long): Double = bytes / 1024.0
+        fun toMB(bytes: Long): Double = bytes / (1024.0 * 1024.0)
+        fun toGB(bytes: Long): Double = bytes / (1024.0 * 1024.0 * 1024.0)
     }
 }

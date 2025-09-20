@@ -1,4 +1,4 @@
-package nasonly.ui.theme
+package com.example.nasonly.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

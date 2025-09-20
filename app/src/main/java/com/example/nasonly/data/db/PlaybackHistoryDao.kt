@@ -1,4 +1,4 @@
-package nasonly.data.db
+package com.example.nasonly.data.db
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -23,12 +23,4 @@ interface PlaybackHistoryDao {
     // 删除单条播放记录
     @Query("DELETE FROM playback_history WHERE videoId = :videoId")
     suspend fun deleteHistory(videoId: String)
-
-    // 清空所有播放记录
-    @Query("DELETE FROM playback_history")
-    suspend fun clearAllHistory()
-
-    // 获取视频的播放记录
-    @Query("SELECT * FROM playback_history WHERE videoId = :videoId LIMIT 1")
-    suspend fun getHistoryForVideo(videoId: String): PlaybackHistory?
 }

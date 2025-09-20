@@ -1,4 +1,4 @@
-package nasonly.ui.screens
+package com.example.nasonly.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +28,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import nasonly.navigation.Screen
+import com.example.nasonly.navigation.Screen
 
 @Composable
 fun NasConfigScreen(
@@ -57,149 +57,62 @@ fun NasConfigScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "NAS服务器配置",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
-        // IP地址输入
         OutlinedTextField(
             value = ipAddress,
             onValueChange = { ipAddress = it },
-            label = { Text("IP地址") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            label = { Text("NAS IP 地址") },
+            modifier = Modifier.fillMaxWidth()
         )
 
-        // 端口输入
         OutlinedTextField(
             value = port,
             onValueChange = { port = it },
             label = { Text("端口") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            singleLine = true
+            modifier = Modifier.fillMaxWidth()
         )
 
-        // 用户名输入
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
             label = { Text("用户名") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            singleLine = true
+            modifier = Modifier.fillMaxWidth()
         )
 
-        // 密码输入
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("密码") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            singleLine = true
+            modifier = Modifier.fillMaxWidth()
         )
 
-        // 保存凭据选项
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalAlignment = Alignment.Start
+        Button(
+            onClick = {
+                viewModel.saveConfig(ipAddress, port.toIntOrNull() ?: 445, username, password, saveCredentials)
+                navController.navigate(Screen.MediaLibrary.route) {
+                    popUpTo(Screen.NasConfig.route) { inclusive = true }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            androidx.compose.foundation.layout.Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                androidx.compose.material3.Checkbox(
-                    checked = saveCredentials,
-                    onCheckedChange = { saveCredentials = it }
-                )
-                Text("保存登录凭据")
+            Icon(imageVector = Icons.Default.Save, contentDescription = "保存")
+            Text("保存配置")
+        }
+
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
         }
 
-        // 操作按钮
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 32.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(
-                onClick = {
-                    val portInt = port.toIntOrNull() ?: 445
-                    viewModel.saveConfig(
-                        ip = ipAddress,
-                        port = portInt,
-                        username = username,
-                        password = password,
-                        saveCredentials = saveCredentials
-                    )
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Save,
-                    contentDescription = "保存",
-                    modifier = Modifier.size(18.dp)
-                )
-                Text("保存配置", modifier = Modifier.padding(start = 8.dp))
-            }
-
-            Button(
-                onClick = {
-                    val portInt = port.toIntOrNull() ?: 445
-                    viewModel.testConnection(
-                        ip = ipAddress,
-                        port = portInt,
-                        username = username,
-                        password = password
-                    ) { success ->
-                        if (success) {
-                            navController.navigate(Screen.MediaLibrary.route)
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp),
-                enabled = ipAddress.isNotEmpty() && username.isNotEmpty()
-            ) {
-                Text("连接并浏览")
-            }
-        }
-
-        // 错误信息
-        if (uiState.errorMessage.isNotEmpty()) {
+        if (uiState.errorMessage != null) {
             Text(
-                text = uiState.errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                style = MaterialTheme.typography.bodyMedium
+                text = uiState.errorMessage ?: "",
+                color = MaterialTheme.colorScheme.error
             )
-        }
-    }
-
-    // 加载中遮罩
-    if (uiState.isLoading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
         }
     }
 }

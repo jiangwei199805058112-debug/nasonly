@@ -1,4 +1,4 @@
-package nasonly.data.db
+package com.example.nasonly.data.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

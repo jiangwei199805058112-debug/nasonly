@@ -1,9 +1,9 @@
-package nasonly
+package com.example.nasonly
 
 import android.app.Application
 import androidx.room.Room
 import dagger.hilt.android.HiltAndroidApp
-import nasonly.data.db.AppDatabase
+import com.example.nasonly.data.db.AppDatabase
 
 @HiltAndroidApp
 class AppApplication : Application() {

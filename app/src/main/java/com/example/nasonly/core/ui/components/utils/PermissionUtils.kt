@@ -1,4 +1,4 @@
-package nasonly.core.utils
+package com.example.nasonly.core.utils
 
 import android.app.Activity
 import android.content.pm.PackageManager
@@ -28,10 +28,5 @@ object PermissionUtils {
             REQUIRED_PERMISSIONS,
             requestCode
         )
-    }
-
-    // 检查权限请求结果
-    fun checkPermissionResults(grantResults: IntArray): Boolean {
-        return grantResults.all { it == PackageManager.PERMISSION_GRANTED }
     }
 }

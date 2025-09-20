@@ -1,4 +1,4 @@
-package nasonly.navigation
+package com.example.nasonly.navigation
 
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.navArgument
@@ -24,25 +24,15 @@ sealed class Screen(
     object VideoPlayer : Screen(
         route = "video_player",
         arguments = listOf(
-            navArgument("videoId") { nullable = false },
-            navArgument("videoUrl") { nullable = false },
-            navArgument("playlistId") { nullable = true },
-            navArgument("position") { defaultValue = 0 }
+            navArgument("videoId") { nullable = false }
         )
     ) {
-        fun createRoute(
-            videoId: String,
-            videoUrl: String,
-            playlistId: String? = null,
-            position: Int = 0
-        ): String {
-            var route = "video_player?videoId=$videoId&videoUrl=$videoUrl&position=$position"
-            if (!playlistId.isNullOrEmpty()) {
-                route += "&playlistId=$playlistId"
-            }
-            return route
-        }
+        fun createRoute(videoId: String): String = "$route/$videoId"
     }
+
+    object PlaylistList : Screen("playlist_list")
+
+    object CreatePlaylist : Screen("create_playlist")
 
     object PlaylistDetail : Screen(
         route = "playlist_detail",
@@ -50,8 +40,8 @@ sealed class Screen(
             navArgument("playlistId") { nullable = false }
         )
     ) {
-        fun createRoute(playlistId: String): String {
-            return "playlist_detail?playlistId=$playlistId"
-        }
+        fun createRoute(playlistId: String): String = "$route/$playlistId"
     }
+
+    object PlaybackHistory : Screen("playback_history")
 }

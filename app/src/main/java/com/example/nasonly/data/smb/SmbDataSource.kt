@@ -1,4 +1,4 @@
-package nasonly.data.smb
+package com.example.nasonly.data.smb
 
 import android.util.Log
 import androidx.media3.datasource.DataSource
@@ -24,115 +24,42 @@ class SmbDataSource(
 
     private var smbFile: SmbFile? = null
     private var inputStream: SmbFileInputStream? = null
-    private var transferListener: TransferListener? = null
-    private var currentOffset = 0L
 
-    override fun addTransferListener(listener: TransferListener) {
-        this.transferListener = listener
+    override fun addTransferListener(transferListener: TransferListener) {
+        // 不需要实现
     }
 
+    @Throws(IOException::class)
     override fun open(dataSpec: DataSpec): Long {
+        val url = "smb://$ip:$port/${dataSpec.uri.path?.removePrefix("/")}"
         return try {
-            Log.d(TAG, "打开SMB文件: ${dataSpec.uri}")
-
-            // 执行带重试的SMB操作
-            val result = runBlocking {
-                connectionManager.executeWithRetry(context, ip, port) { ctx ->
-                    val file = SmbFile(dataSpec.uri.toString(), ctx)
-
-                    // 检查文件是否存在且可读取
-                    if (!file.exists() || !file.isFile || !file.canRead()) {
-                        throw IOException("文件不存在或无法读取: ${dataSpec.uri}")
-                    }
-
-                    // 打开文件输入流
-                    val stream = SmbFileInputStream(file)
-
-                    // 处理偏移量（支持断点续传）
-                    if (dataSpec.position > 0) {
-                        stream.skip(dataSpec.position)
-                        currentOffset = dataSpec.position
-                    }
-
-                    smbFile = file
-                    inputStream = stream
-
-                    // 通知传输开始
-                    transferListener?.onTransferStart(this@SmbDataSource, dataSpec)
-
-                    // 返回文件大小
-                    file.length()
-                }
-            }
-
-            if (result.isSuccess) {
-                result.getOrThrow()
-            } else {
-                throw result.exceptionOrNull() ?: IOException("无法打开SMB文件")
-            }
+            smbFile = SmbFile(url, context)
+            inputStream = SmbFileInputStream(smbFile)
+            smbFile?.length() ?: DataSpec.LENGTH_UNBOUNDED.toLong()
         } catch (e: Exception) {
-            Log.e(TAG, "打开SMB文件失败: ${e.message}", e)
-            close()
-            throw IOException("SMB打开失败: ${e.message}", e)
+            Log.e(TAG, "SMB Open Error: ${e.message}")
+            throw IOException("Failed to open SMB file", e)
         }
     }
 
-    override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+    override fun read(buffer: ByteArray, offset: Int, readLength: Int): Int {
         return try {
-            val stream = inputStream ?: throw IOException("SMB流未打开")
-
-            // 执行带重试的读取操作
-            val result = runBlocking {
-                connectionManager.executeWithRetry(context, ip, port) {
-                    val bytesRead = stream.read(buffer, offset, length)
-                    if (bytesRead > 0) {
-                        currentOffset += bytesRead
-                        transferListener?.onBytesTransferred(
-                            this@SmbDataSource,
-                            buffer,
-                            offset,
-                            bytesRead
-                        )
-                    }
-                    bytesRead
-                }
-            }
-
-            if (result.isSuccess) {
-                result.getOrThrow()
-            } else {
-                throw result.exceptionOrNull() ?: IOException("SMB读取失败")
-            }
+            inputStream?.read(buffer, offset, readLength) ?: -1
         } catch (e: Exception) {
-            Log.e(TAG, "SMB读取错误: ${e.message}", e)
-            throw IOException("SMB读取失败: ${e.message}", e)
+            Log.e(TAG, "SMB Read Error: ${e.message}")
+            -1
         }
     }
 
-    override fun getUri() = smbFile?.url ?: null
+    override fun getUri() = smbFile?.canonicalPath?.let { android.net.Uri.parse(it) }
 
     override fun close() {
         try {
             inputStream?.close()
-            transferListener?.onTransferEnd(this, DataSpec(getUri() ?: ""))
-        } catch (e: Exception) {
-            Log.w(TAG, "关闭SMB流时出错: ${e.message}")
-        } finally {
-            inputStream = null
             smbFile = null
-        }
-    }
-
-    /**
-     * 数据源工厂
-     */
-    class Factory(
-        private val context: CIFSContext,
-        private val ip: String,
-        private val port: Int
-    ) : DataSource.Factory {
-        override fun createDataSource(): DataSource {
-            return SmbDataSource(context, ip, port)
+            inputStream = null
+        } catch (e: Exception) {
+            Log.e(TAG, "SMB Close Error: ${e.message}")
         }
     }
 }

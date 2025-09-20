@@ -1,4 +1,4 @@
-package nasonly.ui.components
+package com.example.nasonly.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import nasonly.core.utils.FileUtils.FileSizeUnit
+import com.example.nasonly.core.utils.FileUtils.FileSizeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,10 +56,12 @@ fun SearchAndFilterBar(
             value = searchQuery,
             onValueChange = onSearchQueryChanged,
             modifier = Modifier.weight(1f),
+            singleLine = true,
+            placeholder = { Text("搜索") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "搜索"
+                    contentDescription = "Search"
                 )
             },
             trailingIcon = {
@@ -67,14 +69,12 @@ fun SearchAndFilterBar(
                     IconButton(onClick = { onSearchQueryChanged("") }) {
                         Icon(
                             imageVector = Icons.Default.Clear,
-                            contentDescription = "清除搜索"
+                            contentDescription = "Clear"
                         )
                     }
                 }
             },
-            placeholder = { Text("搜索视频...") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = { focusManager.clearFocus() }
             )
@@ -85,69 +85,42 @@ fun SearchAndFilterBar(
             IconButton(onClick = { filterExpanded = true }) {
                 Icon(
                     imageVector = Icons.Default.FilterList,
-                    contentDescription = "筛选"
+                    contentDescription = "Filter",
+                    modifier = Modifier.size(24.dp)
                 )
             }
 
-            // 筛选下拉菜单
             DropdownMenu(
                 expanded = filterExpanded,
-                onDismissRequest = { filterExpanded = false },
-                modifier = Modifier.width(200.dp)
+                onDismissRequest = { filterExpanded = false }
             ) {
-                DropdownMenuItem(
-                    text = { Text("无筛选") },
-                    onClick = {
-                        onFilterSelected(FilterOption.NONE)
-                        filterExpanded = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("按名称排序 (A-Z)") },
-                    onClick = {
-                        onFilterSelected(FilterOption.NAME_ASC)
-                        filterExpanded = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("按名称排序 (Z-A)") },
-                    onClick = {
-                        onFilterSelected(FilterOption.NAME_DESC)
-                        filterExpanded = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("按大小排序 (从小到大)") },
-                    onClick = {
-                        onFilterSelected(FilterOption.SIZE_ASC)
-                        filterExpanded = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("按大小排序 (从大到小)") },
-                    onClick = {
-                        onFilterSelected(FilterOption.SIZE_DESC)
-                        filterExpanded = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("仅显示大文件 (>1GB)") },
-                    onClick = {
-                        onFilterSelected(FilterOption.LARGE_FILES)
-                        filterExpanded = false
-                    }
-                )
+                FilterOption.values().forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.label) },
+                        onClick = {
+                            onFilterSelected(option)
+                            filterExpanded = false
+                        }
+                    )
+                }
             }
         }
     }
 }
 
-// 筛选选项
-enum class FilterOption {
-    NONE,          // 无筛选
-    NAME_ASC,      // 名称升序
-    NAME_DESC,     // 名称降序
-    SIZE_ASC,      // 大小升序
-    SIZE_DESC,     // 大小降序
-    LARGE_FILES    // 仅大文件 (>1GB)
+enum class FilterOption(val label: String) {
+    ALL("全部"),
+    SIZE_MB("大于 100 MB"),
+    SIZE_GB("大于 1 GB"),
+    TYPE_VIDEO("视频文件"),
+    TYPE_AUDIO("音频文件");
+
+    fun matches(size: Long, unit: FileSizeUnit): Boolean {
+        return when (this) {
+            ALL -> true
+            SIZE_MB -> unit.toMB(size) > 100
+            SIZE_GB -> unit.toGB(size) > 1
+            TYPE_VIDEO, TYPE_AUDIO -> true // 实际项目里可以扩展类型过滤逻辑
+        }
+    }
 }

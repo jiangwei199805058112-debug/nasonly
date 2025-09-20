@@ -1,4 +1,4 @@
-package nasonly.core.ui.components
+package com.example.nasonly.core.ui.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
