@@ -2,9 +2,9 @@ name: Codex Auto PR
 
 on:
   push:
-    branches-ignore:
-      - main
-  workflow_dispatch:
+    branches:
+      - "codex-fix/*"   # 监听 codex-fix/ 开头的分支
+  workflow_dispatch:     # 允许手动触发
 
 jobs:
   create-pr:
