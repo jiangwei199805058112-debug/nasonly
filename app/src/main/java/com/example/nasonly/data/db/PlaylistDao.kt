@@ -1,4 +1,4 @@
-package com.example.nasonly.data.db
+package nasonly.data.db
 
 import androidx.room.Dao
 import androidx.room.Insert

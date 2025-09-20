@@ -2,10 +2,10 @@ package com.example.nasonly.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.nasonly.data.db.AppDatabase
-import com.example.nasonly.data.db.PlaybackHistoryDao
-import com.example.nasonly.data.db.PlaylistDao
-import com.example.nasonly.data.db.VideoDao
+import nasonly.data.db.AppDatabase
+import nasonly.data.db.PlaybackHistoryDao
+import nasonly.data.db.PlaylistDao
+import nasonly.data.db.VideoDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
