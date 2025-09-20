@@ -3,7 +3,8 @@ name: Codex Auto PR
 on:
   push:
     branches-ignore:
-      - main   # 只要不是 main 分支的 push，就触发
+      - main    # 除了 main，任何分支 push 都触发
+  workflow_dispatch:   # 仍然保留手动触发
 
 jobs:
   create-pr:
