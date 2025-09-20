@@ -1,15 +1,21 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+
+    // ✅ 启用 kapt
+    kotlin("kapt")
+
+    // ✅ 应用 Hilt 插件
+    id("com.google.dagger.hilt.android")
 }
 
 android {
     // 使用 com.example.nasonly 作为 namespace
     namespace = "com.example.nasonly"
-    // 应用 ID 必须和 namespace 一致
+
     defaultConfig {
+        // 应用 ID 必须和 namespace 一致
         applicationId = "com.example.nasonly"
         minSdk = 24
         targetSdk = 34
@@ -44,4 +50,10 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+}
+
+dependencies {
+    // ✅ Hilt 依赖
+    implementation("com.google.dagger:hilt-android:2.52")
+    kapt("com.google.dagger:hilt-compiler:2.52")
 }
